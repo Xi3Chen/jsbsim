@@ -138,13 +138,12 @@ bool FGExternalReactions::Run(bool Holding)
 
 void FGExternalReactions::bind(void)
 {
-  typedef double (FGExternalReactions::*PMF)(int) const;
-  PropertyManager->Tie("moments/l-external-lbsft", this, eL, (PMF)&FGExternalReactions::GetMoments);
-  PropertyManager->Tie("moments/m-external-lbsft", this, eM, (PMF)&FGExternalReactions::GetMoments);
-  PropertyManager->Tie("moments/n-external-lbsft", this, eN, (PMF)&FGExternalReactions::GetMoments);
-  PropertyManager->Tie("forces/fbx-external-lbs", this, eX, (PMF)&FGExternalReactions::GetForces);
-  PropertyManager->Tie("forces/fby-external-lbs", this, eY, (PMF)&FGExternalReactions::GetForces);
-  PropertyManager->Tie("forces/fbz-external-lbs", this, eZ, (PMF)&FGExternalReactions::GetForces);
+  PropertyManager->Tie("moments/l-external-lbsft", this, eL, &FGExternalReactions::GetMoments);
+  PropertyManager->Tie("moments/m-external-lbsft", this, eM, &FGExternalReactions::GetMoments);
+  PropertyManager->Tie("moments/n-external-lbsft", this, eN, &FGExternalReactions::GetMoments);
+  PropertyManager->Tie("forces/fbx-external-lbs", this, eX, &FGExternalReactions::GetForces);
+  PropertyManager->Tie("forces/fby-external-lbs", this, eY, &FGExternalReactions::GetForces);
+  PropertyManager->Tie("forces/fbz-external-lbs", this, eZ, &FGExternalReactions::GetForces);
 }
 
 
@@ -175,12 +174,12 @@ void FGExternalReactions::Debug(int from)
     if (from == 0) { // Constructor - loading and initialization
     }
     if (from == 2) { // Loading
-      FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+      FGLogging log(LogLevel::DEBUG);
       log << "\n  External Reactions: \n";
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGExternalReactions\n";
     if (from == 1) log << "Destroyed:    FGExternalReactions\n";
   }

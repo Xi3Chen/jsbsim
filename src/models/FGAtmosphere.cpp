@@ -61,6 +61,10 @@ FGAtmosphere::FGAtmosphere(FGFDMExec* fdmex)
   Name = "FGAtmosphere";
 
   bind();
+  SGPropertyNode* root = PropertyManager->GetNode();
+  atmosphere_node = root->getNode("atmosphere");
+
+  assert(atmosphere_node);
   Debug(0);
 }
 
@@ -107,7 +111,7 @@ double FGAtmosphere::ValidatePressure(double p, const string& msg, bool quiet) c
   const double MinPressure = ConvertToPSF(1E-15, ePascals);
   if (p < MinPressure) {
     if (!quiet) {
-      FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+      FGLogging log(LogLevel::WARN);
       log << msg << " " << p << " is too low." << endl
           << msg << " will be capped to " << MinPressure << endl;
     }
@@ -128,7 +132,7 @@ double FGAtmosphere::ValidateTemperature(double t, const string& msg, bool quiet
 
   if (t < minUniverseTemperature) {
     if (!quiet) {
-      FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+      FGLogging log(LogLevel::WARN);
       log << msg << " " << t << " is too low." << endl
           << msg << " will be capped to " << minUniverseTemperature << endl;
     }
@@ -141,25 +145,48 @@ double FGAtmosphere::ValidateTemperature(double t, const string& msg, bool quiet
 
 void FGAtmosphere::Calculate(double altitude)
 {
-  FGPropertyNode* node = PropertyManager->GetNode();
   double t =0.0;
-  if (!PropertyManager->HasNode("atmosphere/override/temperature"))
-    t = GetTemperature(altitude);
-  else
-    t = node->GetDouble("atmosphere/override/temperature");
-  Temperature = ValidateTemperature(t, "", true);
-
   double p = 0.0;
-  if (!PropertyManager->HasNode("atmosphere/override/pressure"))
+
+  if (!override_node) override_node = atmosphere_node->getNode("override");
+
+  // Temperature and pressure
+  if (override_node) {
+    if (!override_temperature_node)
+      override_temperature_node = override_node->getNode("temperature");
+
+    if (override_temperature_node)
+      t = override_temperature_node->getDoubleValue();
+    else
+      t = GetTemperature(altitude);
+
+    if (!override_pressure_node)
+      override_pressure_node = override_node->getNode("pressure");
+
+    if (override_pressure_node)
+      p = override_pressure_node->getDoubleValue();
+    else
+      p = GetPressure(altitude);
+  } else {
+    t = GetTemperature(altitude);
     p = GetPressure(altitude);
-  else
-    p = node->GetDouble("atmosphere/override/pressure");
+  }
+
+  Temperature = ValidateTemperature(t, "", true);
   Pressure = ValidatePressure(p, "", true);
 
-  if (!PropertyManager->HasNode("atmosphere/override/density"))
-    Density = Pressure/(Reng*Temperature);
+  // Density
+  if (override_node) {
+    if (!override_density_node)
+      override_density_node = override_node->getNode("density");
+
+    if (override_density_node)
+      Density = override_density_node->getDoubleValue();
+    else
+      Density = Pressure/(Reng*Temperature);
+  }
   else
-    Density = node->GetDouble("atmosphere/override/density");
+    Density = Pressure/(Reng*Temperature);
 
   Soundspeed  = sqrt(SHRatio*Reng*Temperature);
   PressureAltitude = CalculatePressureAltitude(Pressure, altitude);
@@ -359,7 +386,7 @@ void FGAtmosphere::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGAtmosphere" << std::endl;
     if (from == 1) log << "Destroyed:    FGAtmosphere" << std::endl;
   }

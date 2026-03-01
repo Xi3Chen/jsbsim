@@ -232,7 +232,7 @@ bool FGAerodynamics::Run(bool Holding)
     break;
   default:
     {
-      LogException err(FDMExec->GetLogger());
+      LogException err;
       err << "\n  A proper axis type has NOT been selected. Check "
           << "your aerodynamics definition.\n";
       throw err;
@@ -278,7 +278,7 @@ bool FGAerodynamics::Run(bool Holding)
     break;
   default:
     {
-      LogException err(FDMExec->GetLogger());
+      LogException err;
       err << "\n  A proper axis type has NOT been selected. Check "
           << "your aerodynamics definition.\n";
       throw err;
@@ -380,7 +380,7 @@ bool FGAerodynamics::Load(Element *document)
           ca.push_back(new FGFunction(FDMExec, function_element));
       } catch (BaseException& e) {
         string current_func_name = function_element->GetAttributeValue("name");
-        FGXMLLogging log(FDMExec->GetLogger(), axis_element, LogLevel::ERROR);
+        FGXMLLogging log(axis_element, LogLevel::ERROR);
         log << LogFormat::RED << "\nError loading aerodynamic function in "
             << current_func_name << ":" << e.what() << " Aborting.\n" << LogFormat::RESET;
         return false;
@@ -453,25 +453,25 @@ void FGAerodynamics::DetermineAxisSystem(Element* document)
     } else if (axis == "LIFT" || axis == "DRAG") {
       if (forceAxisType == atNone) forceAxisType = atWind;
       else if (forceAxisType != atWind) {
-        FGXMLLogging log(FDMExec->GetLogger(), axis_element, LogLevel::WARN);
+        FGXMLLogging log(axis_element, LogLevel::WARN);
         log << "\n  Mixed aerodynamic axis systems have been used in the"
             << " aircraft config file. (LIFT DRAG)\n";
       }
     } else if (axis == "SIDE") {
       if (forceAxisType != atNone && forceAxisType != atWind && forceAxisType != atBodyAxialNormal) {
-        FGXMLLogging log(FDMExec->GetLogger(), axis_element, LogLevel::WARN);
+        FGXMLLogging log(axis_element, LogLevel::WARN);
         log << "\n  Mixed aerodynamic axis systems have been used in the"
             << " aircraft config file. (SIDE)\n";
       }
     } else if (axis == "AXIAL" || axis == "NORMAL") {
       if (forceAxisType == atNone) forceAxisType = atBodyAxialNormal;
       else if (forceAxisType != atBodyAxialNormal) {
-        FGXMLLogging log(FDMExec->GetLogger(), axis_element, LogLevel::WARN);
+        FGXMLLogging log(axis_element, LogLevel::WARN);
         log << "\n  Mixed aerodynamic axis systems have been used in the"
             << " aircraft config file. (NORMAL AXIAL)\n";
       }
     } else { // error
-      XMLLogException err(FDMExec->GetLogger(), axis_element);
+      XMLLogException err(axis_element);
       err << "\n  An unknown axis type, " << axis << " has been specified"
           << " in the aircraft configuration file.\n";
       throw err;
@@ -481,13 +481,13 @@ void FGAerodynamics::DetermineAxisSystem(Element* document)
 
   if (forceAxisType == atNone) {
     forceAxisType = atWind;
-    FGLogging log(FDMExec->GetLogger(), LogLevel::INFO);
+    FGLogging log(LogLevel::INFO);
     log << "\n  The aerodynamic axis system has been set by default"
         << " to the Lift/Side/Drag system.\n";
   }
   if (momentAxisType == atNone) {
     momentAxisType = atBodyXYZ;
-    FGLogging log(FDMExec->GetLogger(), LogLevel::INFO);
+    FGLogging log(LogLevel::INFO);
     log << "\n  The aerodynamic moment axis system has been set by default"
         << " to the bodyXYZ system.\n";
   }
@@ -502,7 +502,7 @@ void FGAerodynamics::ProcessAxesNameAndFrame(eAxisType& axisType, const string& 
   if (frame == "BODY" || frame.empty()) {
     if (axisType == atNone) axisType = atBodyXYZ;
     else if (axisType != atBodyXYZ) {
-      FGXMLLogging log(FDMExec->GetLogger(), el, LogLevel::WARN);
+      FGXMLLogging log(el, LogLevel::WARN);
       log << "\n Mixed aerodynamic axis systems have been used in the "
           << " aircraft config file." << validNames << " - BODY\n";
     }
@@ -510,7 +510,7 @@ void FGAerodynamics::ProcessAxesNameAndFrame(eAxisType& axisType, const string& 
   else if (frame == "STABILITY") {
     if (axisType == atNone) axisType = atStability;
     else if (axisType != atStability) {
-      FGXMLLogging log(FDMExec->GetLogger(), el, LogLevel::WARN);
+      FGXMLLogging log(el, LogLevel::WARN);
       log << "\n Mixed aerodynamic axis systems have been used in the "
           << " aircraft config file." << validNames << " - STABILITY\n";
     }
@@ -518,13 +518,13 @@ void FGAerodynamics::ProcessAxesNameAndFrame(eAxisType& axisType, const string& 
   else if (frame == "WIND") {
     if (axisType == atNone) axisType = atWind;
     else if (axisType != atWind){
-      FGXMLLogging log(FDMExec->GetLogger(), el, LogLevel::WARN);
+      FGXMLLogging log(el, LogLevel::WARN);
       log << "\n Mixed aerodynamic axis systems have been used in the "
           << " aircraft config file." << validNames << " - WIND\n";
     }
   }
   else {
-    XMLLogException err(FDMExec->GetLogger(), el);
+    XMLLogException err(el);
     err << "\n Unknown axis frame type of - " << frame << "\n";
     throw err;
   }
@@ -592,26 +592,24 @@ string FGAerodynamics::GetAeroFunctionValues(const string& delimeter) const
 
 void FGAerodynamics::bind(void)
 {
-  typedef double (FGAerodynamics::*PMF)(int) const;
-
-  PropertyManager->Tie("forces/fbx-aero-lbs",  this, eX, (PMF)&FGAerodynamics::GetForces);
-  PropertyManager->Tie("forces/fby-aero-lbs",  this, eY, (PMF)&FGAerodynamics::GetForces);
-  PropertyManager->Tie("forces/fbz-aero-lbs",  this, eZ, (PMF)&FGAerodynamics::GetForces);
-  PropertyManager->Tie("moments/l-aero-lbsft", this, eL, (PMF)&FGAerodynamics::GetMoments);
-  PropertyManager->Tie("moments/m-aero-lbsft", this, eM, (PMF)&FGAerodynamics::GetMoments);
-  PropertyManager->Tie("moments/n-aero-lbsft", this, eN, (PMF)&FGAerodynamics::GetMoments);
-  PropertyManager->Tie("forces/fwx-aero-lbs",  this, eDrag, (PMF)&FGAerodynamics::GetvFw);
-  PropertyManager->Tie("forces/fwy-aero-lbs",  this, eSide, (PMF)&FGAerodynamics::GetvFw);
-  PropertyManager->Tie("forces/fwz-aero-lbs",  this, eLift, (PMF)&FGAerodynamics::GetvFw);
-  PropertyManager->Tie("forces/fsx-aero-lbs",  this, eX, (PMF)&FGAerodynamics::GetForcesInStabilityAxes);
-  PropertyManager->Tie("forces/fsy-aero-lbs",  this, eY, (PMF)&FGAerodynamics::GetForcesInStabilityAxes);
-  PropertyManager->Tie("forces/fsz-aero-lbs",  this, eZ, (PMF)&FGAerodynamics::GetForcesInStabilityAxes);
-  PropertyManager->Tie("moments/roll-stab-aero-lbsft", this, eRoll, (PMF)&FGAerodynamics::GetMomentsInStabilityAxes);
-  PropertyManager->Tie("moments/pitch-stab-aero-lbsft", this, ePitch, (PMF)&FGAerodynamics::GetMomentsInStabilityAxes);
-  PropertyManager->Tie("moments/yaw-stab-aero-lbsft", this, eYaw, (PMF)&FGAerodynamics::GetMomentsInStabilityAxes);
-  PropertyManager->Tie("moments/roll-wind-aero-lbsft", this, eRoll, (PMF)&FGAerodynamics::GetMomentsInWindAxes);
-  PropertyManager->Tie("moments/pitch-wind-aero-lbsft", this, ePitch, (PMF)&FGAerodynamics::GetMomentsInWindAxes);
-  PropertyManager->Tie("moments/yaw-wind-aero-lbsft", this, eYaw, (PMF)&FGAerodynamics::GetMomentsInWindAxes);
+  PropertyManager->Tie("forces/fbx-aero-lbs",  this, eX, &FGAerodynamics::GetForces);
+  PropertyManager->Tie("forces/fby-aero-lbs",  this, eY, &FGAerodynamics::GetForces);
+  PropertyManager->Tie("forces/fbz-aero-lbs",  this, eZ, &FGAerodynamics::GetForces);
+  PropertyManager->Tie("moments/l-aero-lbsft", this, eL, &FGAerodynamics::GetMoments);
+  PropertyManager->Tie("moments/m-aero-lbsft", this, eM, &FGAerodynamics::GetMoments);
+  PropertyManager->Tie("moments/n-aero-lbsft", this, eN, &FGAerodynamics::GetMoments);
+  PropertyManager->Tie("forces/fwx-aero-lbs",  this, eDrag, &FGAerodynamics::GetvFw);
+  PropertyManager->Tie("forces/fwy-aero-lbs",  this, eSide, &FGAerodynamics::GetvFw);
+  PropertyManager->Tie("forces/fwz-aero-lbs",  this, eLift, &FGAerodynamics::GetvFw);
+  PropertyManager->Tie("forces/fsx-aero-lbs",  this, eX, &FGAerodynamics::GetForcesInStabilityAxes);
+  PropertyManager->Tie("forces/fsy-aero-lbs",  this, eY, &FGAerodynamics::GetForcesInStabilityAxes);
+  PropertyManager->Tie("forces/fsz-aero-lbs",  this, eZ, &FGAerodynamics::GetForcesInStabilityAxes);
+  PropertyManager->Tie("moments/roll-stab-aero-lbsft", this, eRoll, &FGAerodynamics::GetMomentsInStabilityAxes);
+  PropertyManager->Tie("moments/pitch-stab-aero-lbsft", this, ePitch, &FGAerodynamics::GetMomentsInStabilityAxes);
+  PropertyManager->Tie("moments/yaw-stab-aero-lbsft", this, eYaw, &FGAerodynamics::GetMomentsInStabilityAxes);
+  PropertyManager->Tie("moments/roll-wind-aero-lbsft", this, eRoll, &FGAerodynamics::GetMomentsInWindAxes);
+  PropertyManager->Tie("moments/pitch-wind-aero-lbsft", this, ePitch, &FGAerodynamics::GetMomentsInWindAxes);
+  PropertyManager->Tie("moments/yaw-wind-aero-lbsft", this, eYaw, &FGAerodynamics::GetMomentsInWindAxes);
   PropertyManager->Tie("forces/lod-norm",      this, &FGAerodynamics::GetLoD);
   PropertyManager->Tie("aero/cl-squared",      this, &FGAerodynamics::GetClSquared);
   PropertyManager->Tie("aero/qbar-area", &qbar_area);
@@ -687,7 +685,7 @@ void FGAerodynamics::Debug(int from)
 
   if (debug_lvl & 1) { // Standard console startup message output
     if (from == 2) { // Loader
-      FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+      FGLogging log(LogLevel::DEBUG);
       switch (forceAxisType) {
       case (atWind):
         log << "\n  Aerodynamics (Lift|Side|Drag axes):\n\n";
@@ -708,7 +706,7 @@ void FGAerodynamics::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGAerodynamics\n";
     if (from == 1) log << "Destroyed:    FGAerodynamics\n";
   }

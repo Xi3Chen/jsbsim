@@ -122,9 +122,8 @@ void FGPID::bind(Element *el, FGPropertyManager* PropertyManager)
   } else {
     tmp = Name;
   }
-  typedef double (FGPID::*PMF)(void) const;
-  PropertyManager->Tie(tmp+"/initial-integrator-value", this, (PMF)nullptr,
-                       &FGPID::SetInitialOutput);
+  PropertyManager->Tie<FGPID, double>(tmp+"/initial-integrator-value", this,
+                                      nullptr, &FGPID::SetInitialOutput);
 
   Debug(0);
 }
@@ -236,7 +235,7 @@ void FGPID::Debug(int from)
   if (debug_lvl <= 0) return;
 
   if (debug_lvl & 1) { // Standard console startup message output
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) { // Constructor
       log << "      INPUT: " << InputNodes[0]->GetNameWithSign() << "\n";
 
@@ -245,7 +244,7 @@ void FGPID::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGPID\n";
     if (from == 1) log << "Destroyed:    FGPID\n";
   }

@@ -73,7 +73,7 @@ class FGFCSChannel {
 public:
   /// Constructor
   FGFCSChannel(FGFCS* FCS, const std::string &name, int execRate,
-               FGPropertyNode* node=0)
+               SGPropertyNode* node=nullptr)
     : fcs(FCS), OnOffNode(node), Name(name)
   {
     ExecRate = execRate < 1 ? 1 : execRate;
@@ -100,7 +100,7 @@ public:
     if (i < GetNumComponents()) {
       return FCSComponents[i];
     } else {
-      FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::ERROR);
+      FGLogging log(LogLevel::ERROR);
       log << "Tried to get nonexistent component\n";
       return nullptr;
     }
@@ -142,7 +142,7 @@ public:
   private:
     FGFCS* fcs;
     FCSCompVec FCSComponents;
-    FGConstPropertyNode_ptr OnOffNode;
+    SGConstPropertyNode_ptr OnOffNode;
     std::string Name;
 
     int ExecRate;        // rate at which this system executes, 0 or 1 every frame, 2 every second frame etc..

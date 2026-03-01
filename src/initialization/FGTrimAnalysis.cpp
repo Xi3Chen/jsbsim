@@ -61,6 +61,7 @@ INCLUDES
 
 #include "input_output/FGPropertyManager.h"
 #include "input_output/FGXMLParse.h"
+#include "input_output/FGLog.h"
 
 #include "models/propulsion/FGPiston.h"
 #include "models/propulsion/FGPropeller.h"
@@ -102,13 +103,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //friend void find_CostFunctionFull(long vars, Vector<double> &v, double & f,
+  //friend void find_CostFunctionFull(long vars, Vector<double> &v, double & f,
     void find_CostFunctionFull(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionFull(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionFull(vars, v, f);
+    success = true;
+  }
     /** Wrapping function for the effective Wings Level Trim cost function, to be called by optimization method
         @param vars number ofcontrol varables
         @param v reference to a vector containing controls variables
@@ -121,13 +122,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //friend void find_CostFunctionFullWingsLevel(long vars, Vector<double> &v, double & f,
+  //friend void find_CostFunctionFullWingsLevel(long vars, Vector<double> &v, double & f,
     void find_CostFunctionFullWingsLevel(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionFullWingsLevel(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionFullWingsLevel(vars, v, f);
+    success = true;
+  }
     /** Wrapping function for the effective Longitudinal Trim cost function, to be called by optimization method
         @param vars number ofcontrol varables
         @param v reference to a vector containing controls variables
@@ -140,13 +141,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //friend void find_CostFunctionLongitudinal(long vars, Vector<double> &v, double & f,
+  //friend void find_CostFunctionLongitudinal(long vars, Vector<double> &v, double & f,
     void find_CostFunctionLongitudinal(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionLongitudinal(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionLongitudinal(vars, v, f);
+    success = true;
+  }
     /** Wrapping function for the effective Steady Turn Trim cost function, to be called by optimization method
         @param vars number ofcontrol varables
         @param v reference to a vector containing controls variables
@@ -159,13 +160,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //friend void find_CostFunctionFullCoordinatedTurn(long vars, Vector<double> &v, double & f,
+  //friend void find_CostFunctionFullCoordinatedTurn(long vars, Vector<double> &v, double & f,
     void find_CostFunctionFullCoordinatedTurn(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionFullCoordinatedTurn(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionFullCoordinatedTurn(vars, v, f);
+    success = true;
+  }
     /** Wrapping function for the effective Steady Turn Trim cost function, to be called by optimization method
         @param vars number ofcontrol varables
         @param v reference to a vector containing controls variables
@@ -178,13 +179,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //fryyiend void find_CostFunctionFullTurn(long vars, Vector<double> &v, double & f,
+  //fryyiend void find_CostFunctionFullTurn(long vars, Vector<double> &v, double & f,
     void find_CostFunctionFullTurn(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionFullTurn(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionFullTurn(vars, v, f);
+    success = true;
+  }
     /** Wrapping function for the effective Pullup Trim cost function, to be called by optimization method
         @param vars number ofcontrol varables
         @param v reference to a vector containing controls variables
@@ -197,13 +198,13 @@ IDENT(IdHdr,ID_FGTRIMANALYSIS);
      * Note that in the call masked by this methods, the void pointer
      * should be cast to a pointer of the class type.
      */
-    //friend void find_CostFunctionPullUp(long vars, Vector<double> &v, double & f,
+  //friend void find_CostFunctionPullUp(long vars, Vector<double> &v, double & f,
     void find_CostFunctionPullUp(long vars, Vector<double> &v, double & f,
                     bool & success, void* t_ptr)
-    {
-        (*(Objective*)t_ptr).CostFunctionPullUp(vars, v, f);
-        success = true;
-    }
+  {
+    (*(Objective*)t_ptr).CostFunctionPullUp(vars, v, f);
+    success = true;
+  }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //public:
 
@@ -220,12 +221,14 @@ Objective::Objective(FGFDMExec* fdmex, FGTrimAnalysis* ta, double x) : _x(x), Tr
 void Objective::CostFunctionFull(long vars, Vector<double> &v, double & f)
 {
   if (vars != 7) {
-      cerr << "\nError: (Cost function for taFull mode) Dimension must be 7 !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: (Cost function for taFull mode) Dimension must be 7 !!\n";
+    throw err;
   }
   if (TrimAnalysis->GetMode()!=taFull){
-      cerr << "\nError: must be taFull mode !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: must be taFull mode !!\n";
+    throw err;
   }
 
   f = myCostFunctionFull(v);
@@ -235,12 +238,14 @@ void Objective::CostFunctionFull(long vars, Vector<double> &v, double & f)
 void Objective::CostFunctionFullWingsLevel(long vars, Vector<double> &v, double & f)
 {
   if (vars != 6) {
-      cerr << "\nError: (Cost function for taFullWingsLevel mode) Dimension must be 6 !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: (Cost function for taFullWingsLevel mode) Dimension must be 6 !!\n";
+    throw err;
   }
   if (TrimAnalysis->GetMode()!=taFullWingsLevel){
-      cerr << "\nError: must be taFull mode !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: must be taFull mode !!\n";
+    throw err;
   }
 
   f = myCostFunctionFullWingsLevel(v);
@@ -250,12 +255,14 @@ void Objective::CostFunctionFullWingsLevel(long vars, Vector<double> &v, double 
 void Objective::CostFunctionLongitudinal(long vars, Vector<double> &v, double & f)
 {
   if (vars != 3) {
-      cerr << "\nError: (Cost function for taLongitudinal mode) Dimension must be 3 !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: (Cost function for taLongitudinal mode) Dimension must be 3 !!\n";
+      throw err;
   }
   if (TrimAnalysis->GetMode()!=taLongitudinal){
-      cerr << "\nError: trim mode must be taLongitudinal mode !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: trim mode must be taLongitudinal mode !!\n";
+      throw err;
   }
 
   f = myCostFunctionLongitudinal(v);
@@ -265,12 +272,14 @@ void Objective::CostFunctionLongitudinal(long vars, Vector<double> &v, double & 
 void Objective::CostFunctionFullCoordinatedTurn(long vars, Vector<double> &v, double & f)
 {
   if (vars != 5) {
-      cerr << "\nError: (Cost function for taTurn mode) Dimension must be 5 !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: (Cost function for taTurn mode) Dimension must be 5 !!\n";
+      throw err;
   }
   if (TrimAnalysis->GetMode()!=taTurn){
-      cerr << "\nError: trim mode must be taTurn mode !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: trim mode must be taTurn mode !!\n";
+      throw err;
   }
 
   f = myCostFunctionFullCoordinatedTurn(v);
@@ -280,12 +289,14 @@ void Objective::CostFunctionFullCoordinatedTurn(long vars, Vector<double> &v, do
 void Objective::CostFunctionFullTurn(long vars, Vector<double> &v, double & f)
 {
   if (vars != 6) {
-      cerr << "\nError: (Cost function for taTurn mode) Dimension must be 6 !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: (Cost function for taTurn mode) Dimension must be 6 !!\n";
+      throw err;
   }
   if (TrimAnalysis->GetMode()!=taTurnFull){
-      cerr << "\nError: trim mode must be taTurnFull ("<< (int)taTurnFull << ") mode !!\n";
-      exit(1);
+      LogException err;
+      err << "\nError: trim mode must be taTurnFull ("<< (int)taTurnFull << ") mode !!\n";
+      throw err;
   }
 
   f = myCostFunctionFullTurn(v);
@@ -295,12 +306,14 @@ void Objective::CostFunctionFullTurn(long vars, Vector<double> &v, double & f)
 void Objective::CostFunctionPullUp(long vars, Vector<double> &v, double & f)
 {
   if (vars != 5) {
-      cerr << "\nError: (Cost function for taPullup mode) Dimension must be 5 !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: (Cost function for taPullup mode) Dimension must be 5 !!\n";
+    throw err;
   }
   if (TrimAnalysis->GetMode()!=taPullup){
-      cerr << "\nError: trim mode must be taPullup mode !!\n";
-      exit(1);
+    LogException err;
+    err << "\nError: trim mode must be taPullup mode !!\n";
+    throw err;
   }
 
   f = myCostFunctionPullUp(v);
@@ -467,10 +480,11 @@ bool FGTrimAnalysis::Load(string fname, bool useStoredPath)
     document = this->LoadXMLDocument(trimDef);
 
     trimCfg = document->FindElement("trim_config");
-    if (!trimCfg) {
-        cerr << "File: " << trimDef << " does not contain a trim configuration tag" << endl;
-        return false;
-    }
+  if (!trimCfg) {
+    FGLogging log(document, LogLevel::ERROR);
+    log << "File: " << trimDef << " does not contain a trim configuration tag\n";
+    return false;
+  }
 
     name = trimCfg->GetAttributeValue("name");
     trim_id = name;
@@ -478,9 +492,10 @@ bool FGTrimAnalysis::Load(string fname, bool useStoredPath)
     // First, find "search" element that specifies the type of cost function minimum search
 
     search_element = trimCfg->FindElement("search");
-    if (!search_element) {
-        cerr << "Using the Nelder-Mead search algorithm (default)." << endl;
-    } else {
+  if (!search_element) {
+    FGXMLLogging log(trimCfg, LogLevel::ERROR);
+    log << "Using the Nelder-Mead search algorithm (default).\n";
+  } else {
         type = search_element->GetAttributeValue("type");
         if (type.size() > 0) search_type = type; // if search type is not set, default is already Nelder-Mead
         if (search_type == "Nelder-Mead") {
@@ -521,7 +536,7 @@ bool FGTrimAnalysis::Load(string fname, bool useStoredPath)
 
     element = trimCfg->FindElement("theta");
     InitializeTrimControl(fgic->GetThetaRadIC(), element, "RAD", JSBSim::taTheta);
-    
+
     element = trimCfg->FindElement("psi");
     InitializeTrimControl(fgic->GetPsiRadIC(), element, "RAD", JSBSim::taHeading);
 
@@ -551,12 +566,15 @@ bool FGTrimAnalysis::Load(string fname, bool useStoredPath)
     output_element = trimCfg->FindElement("output_file");
     if (output_element) {
         rf_name = output_element->GetAttributeValue("name");
-        if (rf_name.empty()) {
-            cerr << "name must be specified in output_file \"name\" attribute."<< endl;
-        } else {
-            if ( !SetResultsFile(rf_name) )
-                cerr << "Unable to use output file "<< rf_name << endl;
-        }
+    if (rf_name.empty()) {
+      FGXMLLogging log(output_element, LogLevel::ERROR);
+      log << "name must be specified in output_file \"name\" attribute.\n";
+    } else {
+      if ( !SetResultsFile(rf_name) ) {
+        FGXMLLogging log(output_element, LogLevel::ERROR);
+        log << "Unable to use output file "<< rf_name << "\n";
+      }
+    }
     }
     return true;
 }
@@ -601,49 +619,50 @@ bool FGTrimAnalysis::InitializeTrimControl(double default_value, Element* el,
 
 void FGTrimAnalysis::TrimStats() {
   int run_sum=0;
-  cout << endl << "  Trim Statistics: " << endl;
-  cout << "    Total Iterations: " << total_its << endl;
+  FGLogging log(LogLevel::INFO);
+  log << "\n  Trim Statistics:\n";
+  log << "    Total Iterations: " << total_its << "\n";
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void FGTrimAnalysis::Report(void) {
+  FGLogging log(LogLevel::INFO);
+  log << "---------------------------------------------------------------------\n";
 
-    cout << "---------------------------------------------------------------------\n";
+    log << "Trim report:\n";
+      log << "\tTrim algorithm terminated with the following values:\n";
+      log << "\tu, v, w        (ft/s): " << _u <<", "<< _v <<", "<< _w << "\n"
+           << "\tp, q, r       (rad/s): " << _p <<", "<< _q <<", "<< _r << "\n"
+           << "\talpha, beta     (deg): " << _alpha*57.3 <<", "<< _beta*57.3 << "\n"
+           << "\tphi, theta, psi (deg): " << _phi*57.3 <<", "<< _theta*57.3 << ", " << _psi*57.3 << "\n"
+           << "\tCost function value  : " << cost_function_value << "\n"
+           << "\tCycles executed      : " << total_its << "\n\n";
 
-    cout << "Trim report: " << endl;
-      cout << "\tTrim algorithm terminated with the following values:" << endl;
-      cout << "\tu, v, w        (ft/s): " << _u <<", "<< _v <<", "<< _w << endl
-           << "\tp, q, r       (rad/s): " << _p <<", "<< _q <<", "<< _r << endl
-           << "\talpha, beta     (deg): " << _alpha*57.3 <<", "<< _beta*57.3 << endl
-           << "\tphi, theta, psi (deg): " << _phi*57.3 <<", "<< _theta*57.3 << ", " << _psi*57.3 << endl
-           << "\tCost function value  : " << cost_function_value << endl
-           << "\tCycles executed      : " << total_its << endl << endl;
-
-      cout << "\tTrim variables adjusted:" << endl;
+      log << "\tTrim variables adjusted:\n";
       for (unsigned int i=0; i<vTrimAnalysisControls.size();i++){
-          cout << "\t\t" << vTrimAnalysisControls[i]->GetControlName() <<": ";
-          cout << vTrimAnalysisControls[i]->GetControl() << endl;
+          log << "\t\t" << vTrimAnalysisControls[i]->GetControlName() <<": ";
+          log << vTrimAnalysisControls[i]->GetControl() << "\n";
       }
       //...
 
-      cout << endl;
+      log << "\n";
 
-      cout << "\t** Initial -> Final Conditions **" << endl;
-      cout << "\tAlpha IC: " << fgic->GetAlphaDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << Auxiliary->Getalpha()*57.3 << " Degrees" << endl;
-      cout << "\tBeta  IC: " << fgic->GetBetaDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << Auxiliary->Getbeta()*57.3 << " Degrees" << endl;
-      cout << "\tGamma IC: " << fgic->GetFlightPathAngleDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << Auxiliary->GetGamma()*57.3 << " Degrees" << endl;
-      cout << "\tPhi IC  : " << fgic->GetPhiDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << fdmex->GetPropagate()->GetEuler(1)*57.3 << " Degrees" << endl;
-      cout << "\tTheta IC: " << fgic->GetThetaDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << fdmex->GetPropagate()->GetEuler(2)*57.3 << " Degrees" << endl;
-      cout << "\tPsi IC  : " << fgic->GetPsiDegIC() << " Degrees" << endl;
-      cout << "\t   Final: " << fdmex->GetPropagate()->GetEuler(3)*57.3 << " Degrees" << endl;
-      cout << endl;
-      cout << "--------------------------------------------------------------------- \n\n";
+      log << "\t** Initial -> Final Conditions **\n";
+      log << "\tAlpha IC: " << fgic->GetAlphaDegIC() << " Degrees\n";
+      log << "\t   Final: " << Auxiliary->Getalpha()*57.3 << " Degrees\n";
+      log << "\tBeta  IC: " << fgic->GetBetaDegIC() << " Degrees\n";
+      log << "\t   Final: " << Auxiliary->Getbeta()*57.3 << " Degrees\n";
+      log << "\tGamma IC: " << fgic->GetFlightPathAngleDegIC() << " Degrees\n";
+      log << "\t   Final: " << Auxiliary->GetGamma()*57.3 << " Degrees\n";
+      log << "\tPhi IC  : " << fgic->GetPhiDegIC() << " Degrees\n";
+      log << "\t   Final: " << fdmex->GetPropagate()->GetEuler(1)*57.3 << " Degrees\n";
+      log << "\tTheta IC: " << fgic->GetThetaDegIC() << " Degrees\n";
+      log << "\t   Final: " << fdmex->GetPropagate()->GetEuler(2)*57.3 << " Degrees\n";
+      log << "\tPsi IC  : " << fgic->GetPsiDegIC() << " Degrees\n";
+      log << "\t   Final: " << fdmex->GetPropagate()->GetEuler(3)*57.3 << " Degrees\n";
+      log << "\n";
+      log << "--------------------------------------------------------------------- \n\n";
 
       fdmex->EnableOutput();
 }
@@ -697,7 +716,7 @@ bool FGTrimAnalysis::RemoveControl( TaControl control ) {
   bool result=false;
 
   mode = taCustom;
-  
+
   #error TODO: Iterator is used after erase(). See GH issue #309
   vector <FGTrimAnalysisControl*>::iterator iControls = vTrimAnalysisControls.begin();
   while (iControls != vTrimAnalysisControls.end()) {
@@ -739,11 +758,12 @@ bool FGTrimAnalysis::EditState( TaControl new_control, double new_initvalue, dou
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void FGTrimAnalysis::setupPullup() {
+  FGLogging log(LogLevel::INFO);
   double g,q,cgamma;
   g=fdmex->GetInertial()->gravity();
   cgamma=cos(fgic->GetFlightPathAngleRadIC());
   q=g*(_targetNlf-cgamma)/fgic->GetVtrueFpsIC();
-  cout << _targetNlf << ", " << q << endl;
+  log << _targetNlf << ", " << q << "\n";
   fgic->SetQRadpsIC(q);
   updateRates();
 
@@ -997,21 +1017,27 @@ void FGTrimAnalysis::setDebug(void) {
 void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
 
     ClearControls();
-
-    cout << "---------------------------------------------------------------------" << endl;
-    cout << "Trim analysis performed: ";
+  {
+    FGLogging log(LogLevel::INFO);
+    log << "---------------------------------------------------------------------\n";
+    log << "Trim analysis performed: ";
+  }
     mode=tt;
     switch(tt) {
       case taLongitudinal:
-        if (debug_lvl > 0)
-          cout << "  Longitudinal Trim" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Longitudinal Trim\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taTheta ));
         break;
       case taFull:
-        if (debug_lvl > 0)
-          cout << "  Full Trim" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Full Trim\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAileron ));  // TODO: taRollTrim
@@ -1021,8 +1047,10 @@ void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taHeading ));
         break;
       case taFullWingsLevel:
-        if (debug_lvl > 0)
-          cout << "  Full Trim, Wings-Level" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Full Trim, Wings-Level\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAileron ));  // TODO: taRollTrim
@@ -1033,8 +1061,10 @@ void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
       case taTurn:
           // ToDo: set target NLF here !!!
           // ToDo: assign psiDot here !!
-        if (debug_lvl > 0)
-          cout << "  Full Trim, Coordinated turn" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Full Trim, Coordinated turn\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAileron ));  // TODO: taRollTrim
@@ -1044,8 +1074,10 @@ void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taHeading ));
         break;
       case taTurnFull:
-        if (debug_lvl > 0)
-          cout << "  Non-coordinated Turn Trim" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Non-coordinated Turn Trim\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAileron ));  // TODO: taRollTrim
@@ -1058,8 +1090,10 @@ void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
       case taPullup:
           // ToDo: set target NLF here !!!
           // ToDo: assign qDot here !!
-        if (debug_lvl > 0)
-          cout << "  Full Trim, Pullup" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Full Trim, Pullup\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taThrottle ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taElevator )); // TODO: taPitchTrim
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAileron ));
@@ -1069,8 +1103,10 @@ void FGTrimAnalysis::SetMode(TrimAnalysisMode tt) {
         //vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taHeading ));
         break;
       case taGround:
-        if (debug_lvl > 0)
-          cout << "  Ground Trim" << endl;
+        if (debug_lvl > 0) {
+          FGLogging log(LogLevel::DEBUG);
+          log << "  Ground Trim\n";
+        }
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taAltAGL ));
         vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taTheta ));
         //vTrimAnalysisControls.push_back(new FGTrimAnalysisControl(fdmex,fgic,taPhi ));
@@ -1092,11 +1128,12 @@ bool FGTrimAnalysis::SetResultsFile(string name)
 
     rf_name = name;
     rf.open(rf_name.c_str(), ios::out);
-    if ( !rf.is_open() ) {
-       cerr << "Unable to open " << rf_name << endl;
-       return false;
-    }
-    //rf << "# ... complete this " << endl;
+   if ( !rf.is_open() ) {
+     FGLogging log(LogLevel::ERROR);
+     log << "Unable to open " << rf_name << "\n";
+     return false;
+   }
+    //rf << "# ... complete this\n";
     //rf << "# iteration, CostFunc, size, dT, dE, dA, dR, Psi (rad), Theta (rad), Phi (rad)\n";
     return true;
 }
@@ -1278,7 +1315,8 @@ bool FGTrimAnalysis::DoTrim(void) {
     // retrieve initial conditions
     fdmex->RunIC();
 
-    cout << endl << "Numerical trim algorithm: constrained optimization of a cost function" << endl;
+    FGLogging log(LogLevel::INFO);
+    log << "\nNumerical trim algorithm: constrained optimization of a cost function\n";
 
     Objective* obj_ptr = new Objective(this->fdmex, this, 999.0);
 
@@ -1378,8 +1416,7 @@ bool FGTrimAnalysis::DoTrim(void) {
   // write trim results on file, rf=results file
   if ( rf.is_open() )
     rf <<
-      "# iteration, costf, dT, dE, dA, dR, Phi (rad), Theta (rad), Psi (rad), uDot (fps2), vDot (fps2), wDot (fps2), pDot (rad/s2), qDot (rad/s2), rDot (rad/s2), u (fps), v (fps), w (fps), p (rad/s), q (rad/s), r (rad/s), alpha (rad), beta (rad), alphaDot (rad/s), betaDot (rad/s), Thrust"
-      << endl;
+      "# iteration, costf, dT, dE, dA, dR, Phi (rad), Theta (rad), Psi (rad), uDot (fps2), vDot (fps2), wDot (fps2), pDot (rad/s2), qDot (rad/s2), rDot (rad/s2), u (fps), v (fps), w (fps), p (rad/s), q (rad/s), r (rad/s), alpha (rad), beta (rad), alphaDot (rad/s), betaDot (rad/s), Thrust\n";
 
   long n = vTrimAnalysisControls.size();  // number of variables (dimension of the search)
 
@@ -1695,11 +1732,14 @@ bool FGTrimAnalysis::DoTrim(void) {
 
   if( !trim_failed ) {
     if (debug_lvl > 0) {
-      cout << endl << "  Trim successful. (Cost function value: " << cost_function_value << ")" << endl;
+        FGLogging log(LogLevel::DEBUG);
+        log << "\n  Trim successful. (Cost function value: " << cost_function_value << ")\n";
     }
   } else {
-    if (debug_lvl > 0)
-        cout << endl << "  Trim failed" << endl;
+    if (debug_lvl > 0) {
+        FGLogging log(LogLevel::DEBUG);
+        log << "\n  Trim failed\n";
+    }
   }
 
 
@@ -1867,7 +1907,7 @@ double Objective::myCostFunctionFull(Vector<double> & x) // x variations come fr
 
         TrimAnalysis->SetCostFunctionValue(f);
     }
- 
+
     return f;
 }
 
@@ -2509,7 +2549,7 @@ double Objective::myCostFunctionFullTurn(Vector<double> & x)
             << FDMExec->GetAuxiliary()->Getadot() << ", "           // 24
             << FDMExec->GetAuxiliary()->Getbdot() << ", "           // 25
 
-            << FDMExec->GetPropulsion()->GetEngine(0)->GetThrust() << "\n";  // 
+            << FDMExec->GetPropulsion()->GetEngine(0)->GetThrust() << "\n";  //
 
         FDMExec->GetPropagate()->SetVState( VState ); // ?? is this really necessary
 
@@ -3015,7 +3055,11 @@ void Objective::calculateDottedStates(double delta_cmd_T, double delta_cmd_E, do
     const FGMatrix33& Jinv = FDMExec->GetMassBalance()->GetJinv();            // inertia matrix inverse
 
     double rd = FDMExec->GetPropagate()->GetRadius();                         // radius
-    if (rd == 0.0) {cerr << "radius = 0 !" << endl; rd = 1e-16;}              // radius check
+    if (rd == 0.0) {
+        FGLogging log(LogLevel::WARN);
+        log << "radius = 0 !\n";
+        rd = 1e-16;
+    }              // radius check
 
     double rdInv = 1.0/rd;
     FGColumnVector3 gAccel( 0.0, 0.0, FDMExec->GetInertial()->GetGAccel(rd) );

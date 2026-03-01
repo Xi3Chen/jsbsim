@@ -69,7 +69,7 @@ FGStandardAtmosphere::FGStandardAtmosphere(FGFDMExec* fdmex)
 
   // This is the U.S. Standard Atmosphere table for temperature in degrees
   // Rankine, based on geometric altitude. The table values are often given
-  // in literature relative to geopotential altitude. 
+  // in literature relative to geopotential altitude.
   //
   //                        GeoMet Alt    Temp      GeoPot Alt  GeoMet Alt
   //                           (ft)      (deg R)      (km)        (km)
@@ -82,7 +82,7 @@ FGStandardAtmosphere::FGStandardAtmosphere(FGFDMExec* fdmex)
   //                         << 168676.12 << 487.20  //   51.000      51.413
   //                         << 235570.77 << 386.40  //   71.000      71.802
   //                         << 282152.08 << 336.50  //   84.852      86.000
-  //                         << 298556.40 << 336.50; //               91.000 - First layer in high altitude regime 
+  //                         << 298556.40 << 336.50; //               91.000 - First layer in high altitude regime
 
   //                            GeoPot Alt    Temp       GeoPot Alt  GeoMet Alt
   //                               (ft)      (deg R)        (km)        (km)
@@ -364,7 +364,7 @@ void FGStandardAtmosphere::SetTemperatureBias(eTemperature unit, double t)
   // temperature lower than the  lowest known temperature in the universe
   if (minStdAtmosphereTemp + TemperatureBias < minUniverseTemperature) {
     double minBias = minUniverseTemperature - minStdAtmosphereTemp;
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The temperature bias " << TemperatureBias << " R is too low. "
         << "It could result in temperatures below the absolute zero." << endl
         << "Temperature bias is therefore capped to " << minBias << endl;
@@ -415,7 +415,7 @@ void FGStandardAtmosphere::SetTemperatureGradedDelta(double deltemp, double h, e
     deltemp *= 1.80; // If temp delta "t" is given in metric, scale up to English
 
   if (deltemp <= minDeltaTemperature) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The temperature delta " << deltemp << " R is too low. "
         << "It could result in temperatures below the absolute zero." << endl
         << "Temperature delta is therefore capped to " << minDeltaTemperature << endl;
@@ -434,7 +434,7 @@ void FGStandardAtmosphere::SetTemperatureGradedDelta(double deltemp, double h, e
 
   void FGStandardAtmosphere::PrintStandardAtmosphereTable()
 {
-  FGLogging log(FDMExec->GetLogger(), LogLevel::INFO);
+  FGLogging log(LogLevel::INFO);
   log << "Altitude (ft)   Temp (F)   Pressure (psf)   Density (sl/ft3)" << std::endl;
   log << "-------------   --------   --------------   ----------------" << std::endl;
   for (int i=0; i<280000; i+=1000) {
@@ -452,9 +452,9 @@ void FGStandardAtmosphere::SetTemperatureGradedDelta(double deltemp, double h, e
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // This function calculates (or recalculates) the lapse rate over an altitude range
-// where the "bh" in this case refers to the index of the base height in the 
-// StdAtmosTemperatureTable table. This function should be called anytime the 
-// temperature table is altered, such as when a gradient is applied across the 
+// where the "bh" in this case refers to the index of the base height in the
+// StdAtmosTemperatureTable table. This function should be called anytime the
+// temperature table is altered, such as when a gradient is applied across the
 // temperature table for a range of altitudes.
 
 void FGStandardAtmosphere::CalculateLapseRates()
@@ -484,7 +484,7 @@ void FGStandardAtmosphere::CalculatePressureBreakpoints(double SLpress)
     double UpperAlt = StdAtmosTemperatureTable(b+2,0);
     double deltaH = UpperAlt - BaseAlt;
     double Tmb = BaseTemp
-                 + TemperatureBias 
+                 + TemperatureBias
                  + (GradientFadeoutAltitude - BaseAlt)*TemperatureDeltaGradient;
     if (LapseRates[b] != 0.00) {
       double Lmb = LapseRates[b];
@@ -623,10 +623,10 @@ void FGStandardAtmosphere::ValidateVaporMassFraction(double h)
 void FGStandardAtmosphere::SetDewPoint(eTemperature unit, double dewpoint)
 {
   double dewPoint_R = ConvertToRankine(dewpoint, unit);
-  constexpr double minDewPoint = -CelsiusToRankine(c) + 1.0;
+  constexpr double minDewPoint = CelsiusToRankine(-c) + 1.0;
 
   if (dewPoint_R <= minDewPoint) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The dew point temperature " << dewPoint_R << " is lower than "
         << minDewPoint << " R." << endl
         << "Dew point is therefore capped to " << minDewPoint << endl;
@@ -638,7 +638,7 @@ void FGStandardAtmosphere::SetDewPoint(eTemperature unit, double dewpoint)
 
   double finalizedDewPoint = GetDewPoint(eRankine);
   if (finalizedDewPoint < dewPoint_R) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "Dew point temperature has been capped to " << finalizedDewPoint
         << endl;
   }
@@ -668,12 +668,12 @@ void FGStandardAtmosphere::SetVaporPressure(ePressure unit, double Pa)
   double altitude = CalculatePressureAltitude(Pressure, 0.0);
   double VaporPressure = ConvertToPSF(Pa, unit);
   if (VaporPressure < 0.0) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The vapor pressure cannot be negative." << endl
         << "Vapor pressure is set to 0.0" << endl;
     VaporPressure = 0.0;
   } else if (VaporPressure >= Pressure) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The vapor pressure " << VaporPressure
         << " PSF is higher than the ambient pressure." << endl
         << "Vapor pressure is therefore capped to " << Pressure-1.0 << endl;
@@ -711,12 +711,12 @@ double FGStandardAtmosphere::GetRelativeHumidity(void) const
 void FGStandardAtmosphere::SetRelativeHumidity(double RH)
 {
   if (RH < 0.0) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The relative humidity cannot be negative." << endl
         << "Relative humidity is set to 0%" << endl;
     RH = 0.0;
   } else if (RH > 100.0) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The relative humidity cannot be higher than 100%." << endl
         << "Relative humidity is set to 100%" << endl;
     RH = 100.0;
@@ -742,7 +742,7 @@ void FGStandardAtmosphere::SetVaporMassFractionPPM(double frac)
   ValidateVaporMassFraction(altitude);
 
   if (fabs(VaporMassFraction*1E6-frac)>1E-2) {
-    FGLogging log(FDMExec->GetLogger(), LogLevel::WARN);
+    FGLogging log(LogLevel::WARN);
     log << "The vapor mass fraction " << frac << " has been capped to "
         << VaporMassFraction*1E6 << "PPM." << endl;
   }
@@ -752,25 +752,23 @@ void FGStandardAtmosphere::SetVaporMassFractionPPM(double frac)
 
 void FGStandardAtmosphere::bind(void)
 {
-  typedef double (FGStandardAtmosphere::*PMFi)(int) const;
-  typedef void (FGStandardAtmosphere::*PMF)(int, double);
   PropertyManager->Tie("atmosphere/delta-T", this, eRankine,
-                                    (PMFi)&FGStandardAtmosphere::GetTemperatureBias,
-                                    (PMF)&FGStandardAtmosphere::SetTemperatureBias);
+                       &FGStandardAtmosphere::GetTemperatureBias,
+                       &FGStandardAtmosphere::SetTemperatureBias);
   PropertyManager->Tie("atmosphere/SL-graded-delta-T", this, eRankine,
-                                    (PMFi)&FGStandardAtmosphere::GetTemperatureDeltaGradient,
-                                    (PMF)&FGStandardAtmosphere::SetSLTemperatureGradedDelta);
-  PropertyManager->Tie("atmosphere/P-sl-psf", this, ePSF,
-                                   (PMFi)&FGStandardAtmosphere::GetPressureSL,
-                                   (PMF)&FGStandardAtmosphere::SetPressureSL);
+                       &FGStandardAtmosphere::GetTemperatureDeltaGradient,
+                       &FGStandardAtmosphere::SetSLTemperatureGradedDelta);
+  PropertyManager->Tie<FGStandardAtmosphere, double, FGStandardAtmosphere::ePressure>("atmosphere/P-sl-psf", this, ePSF,
+                       &FGStandardAtmosphere::GetPressureSL,
+                       &FGStandardAtmosphere::SetPressureSL);
   PropertyManager->Tie("atmosphere/dew-point-R", this, eRankine,
-                       (PMFi)&FGStandardAtmosphere::GetDewPoint,
-                       (PMF)&FGStandardAtmosphere::SetDewPoint);
+                       &FGStandardAtmosphere::GetDewPoint,
+                       &FGStandardAtmosphere::SetDewPoint);
   PropertyManager->Tie("atmosphere/vapor-pressure-psf", this, ePSF,
-                       (PMFi)&FGStandardAtmosphere::GetVaporPressure,
-                       (PMF)&FGStandardAtmosphere::SetVaporPressure);
+                       &FGStandardAtmosphere::GetVaporPressure,
+                       &FGStandardAtmosphere::SetVaporPressure);
   PropertyManager->Tie("atmosphere/saturated-vapor-pressure-psf", this, ePSF,
-                       (PMFi)&FGStandardAtmosphere::GetSaturatedVaporPressure);
+                       &FGStandardAtmosphere::GetSaturatedVaporPressure);
   PropertyManager->Tie("atmosphere/RH", this,
                        &FGStandardAtmosphere::GetRelativeHumidity,
                        &FGStandardAtmosphere::SetRelativeHumidity);
@@ -807,7 +805,7 @@ void FGStandardAtmosphere::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGStandardAtmosphere" << std::endl;
     if (from == 1) log << "Destroyed:    FGStandardAtmosphere" << std::endl;
   }
@@ -817,7 +815,7 @@ void FGStandardAtmosphere::Debug(int from)
   }
   if (debug_lvl & 16) { // Sanity checking
   }
-  if (debug_lvl & 128) { // 
+  if (debug_lvl & 128) { //
   }
   if (debug_lvl & 64) {
     if (from == 0) { // Constructor

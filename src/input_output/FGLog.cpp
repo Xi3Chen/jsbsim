@@ -46,6 +46,12 @@ INCLUDES
 
 namespace JSBSim {
 
+thread_local FGLogger_ptr GlobalLogger = std::make_shared<FGLogConsole>();
+
+void SetLogger(FGLogger_ptr logger) { GlobalLogger = logger; }
+FGLogger_ptr GetLogger(void) { return GlobalLogger; }
+
+
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 CLASS IMPLEMENTATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -53,9 +59,7 @@ CLASS IMPLEMENTATION
 class BufferLogger : public FGLogger
 {
 public:
-  BufferLogger(std::shared_ptr<FGLogger> logger) : logger(logger) {
-    logMessageBuffer[0] = '\0';
-  }
+  BufferLogger() { logMessageBuffer[0] = '\0'; }
   void FileLocation(const std::string& filename, int line) override {
     this->filename = filename;
     this->line = line;
@@ -75,7 +79,6 @@ private:
   char logMessageBuffer[1024];
   size_t bufferUsed = 0;
   std::vector<MessageToken> tokens;
-  const std::shared_ptr<FGLogger> logger;
   std::string filename;
   int line = -1;
 };
@@ -114,18 +117,26 @@ BufferLogger::~BufferLogger()
 {
   if (tokens.empty()) return;
 
-  logger->SetLevel(log_level);
+  GlobalLogger->SetLevel(log_level);
 
-  if (line > 0) logger->FileLocation(filename, line);
+  if (line > 0) GlobalLogger->FileLocation(filename, line);
 
   for (const auto& token : tokens) {
     if (token.messageItem.empty()) {
-      logger->Format(token.format);
+      GlobalLogger->Format(token.format);
       continue;
     }
-    logger->Message(std::string(token.messageItem));
+    GlobalLogger->Message(std::string(token.messageItem));
   }
-  logger->Flush();
+  GlobalLogger->Flush();
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+FGLogging::FGLogging(LogLevel level)
+  : logger(GlobalLogger)
+{
+  logger->SetLevel(level);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,7 +155,8 @@ void FGLogging::Flush(void)
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FGLogging& FGLogging::operator<<(LogFormat format) {
+FGLogging& FGLogging::operator<<(LogFormat format)
+{
   std::string message = buffer.str();
 
   if (!message.empty()) {
@@ -158,8 +170,8 @@ FGLogging& FGLogging::operator<<(LogFormat format) {
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FGXMLLogging::FGXMLLogging(std::shared_ptr<FGLogger> logger, Element* el, LogLevel level)
-  : FGLogging(logger, level)
+FGXMLLogging::FGXMLLogging(Element* el, LogLevel level)
+  : FGLogging(level)
 {
   logger->FileLocation(el->GetFileName(), el->GetLineNumber());
 }
@@ -172,16 +184,16 @@ void FGLogConsole::Flush(void) {
   case LogLevel::BULK:
   case LogLevel::DEBUG:
   case LogLevel::INFO:
-    std::cout << buffer.str();
+    std::cout << buffer;
     std::cout.flush(); // Force the message to be immediately displayed in the console
     break;
   default:
-    std::cerr << buffer.str();
+    std::cerr << buffer;
     std::cerr.flush(); // Force the message to be immediately displayed in the console
     break;
   }
 
-  buffer.str("");
+  buffer.clear();
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -190,42 +202,45 @@ void FGLogConsole::Format(LogFormat format) {
   switch (format)
   {
   case LogFormat::RED:
-    buffer << FGJSBBase::fgred;
+    buffer.append(FGJSBBase::fgred);
     break;
   case LogFormat::BLUE:
-    buffer << FGJSBBase::fgblue;
+    buffer.append(FGJSBBase::fgblue);
     break;
   case LogFormat::BOLD:
-    buffer << FGJSBBase::highint;
+    buffer.append(FGJSBBase::highint);
     break;
   case LogFormat::NORMAL:
-    buffer << FGJSBBase::normint;
+    buffer.append(FGJSBBase::normint);
     break;
   case LogFormat::UNDERLINE_ON:
-    buffer << FGJSBBase::underon;
+    buffer.append(FGJSBBase::underon);
     break;
   case LogFormat::UNDERLINE_OFF:
-    buffer << FGJSBBase::underoff;
+    buffer.append(FGJSBBase::underoff);
     break;
   case LogFormat::DEFAULT:
-    buffer << FGJSBBase::fgdef;
+    buffer.append(FGJSBBase::fgdef);
     break;
   case LogFormat::RESET:
   default:
-    buffer << FGJSBBase::reset;
+    buffer.append(FGJSBBase::reset);
     break;
   }
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-LogException::LogException(std::shared_ptr<FGLogger> logger)
-: BaseException(""), FGLogging(std::make_shared<BufferLogger>(logger), LogLevel::FATAL) {}
+LogException::LogException()
+: BaseException(""), FGLogging(std::make_shared<BufferLogger>())
+{
+  logger->SetLevel(LogLevel::FATAL);
+}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 LogException::LogException(LogException& other)
-: BaseException(""), FGLogging(other.logger, LogLevel::FATAL)
+: BaseException(""), FGLogging(other.logger)
 {
   other.Flush(); // Make the data buffered in `other` accessible to all copies.
 }
@@ -245,10 +260,10 @@ const char* LogException::what() const noexcept
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-XMLLogException::XMLLogException(std::shared_ptr<FGLogger> logger, Element* el)
-  : LogException(logger)
+XMLLogException::XMLLogException(Element* el)
+  : LogException()
 {
-  this->logger->FileLocation(el->GetFileName(), el->GetLineNumber());
+  logger->FileLocation(el->GetFileName(), el->GetLineNumber());
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -109,18 +109,18 @@ void FGSummer::Debug(int from)
   if (debug_lvl <= 0) return;
 
   if (debug_lvl & 1) { // Standard console startup message output
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) { // Constructor
       log << "      INPUTS: " << fixed << "\n";
       for (auto node: InputNodes)
         log << "       " << node->GetNameWithSign() << "\n";
       if (Bias != 0.0) log << "       Bias: " << Bias << "\n";
       for (auto node: OutputNodes)
-        log << "      OUTPUT: " << node->GetName() << "\n";
+        log << "      OUTPUT: " << node->getNameString() << "\n";
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGSummer\n";
     if (from == 1) log << "Destroyed:    FGSummer\n";
   }

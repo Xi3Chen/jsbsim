@@ -269,7 +269,7 @@ void FGMassBalance::AddPointMass(Element* el)
   Element* loc_element = el->FindElement("location");
   string pointmass_name = el->GetAttributeValue("name");
   if (!loc_element) {
-    XMLLogException err(FDMExec->GetLogger(), el);
+    XMLLogException err(el);
     err << "Pointmass " << pointmass_name << " has no location." << endl;
     throw err;
   }
@@ -395,34 +395,20 @@ FGColumnVector3 FGMassBalance::StructuralToBody(const FGColumnVector3& r) const
 
 void FGMassBalance::bind(void)
 {
-  typedef double (FGMassBalance::*PMF)(int) const;
-  PropertyManager->Tie("inertia/mass-slugs", this,
-                       &FGMassBalance::GetMass);
-  PropertyManager->Tie("inertia/weight-lbs", this,
-                       &FGMassBalance::GetWeight);
-  PropertyManager->Tie("inertia/empty-weight-lbs", this,
-                       &FGMassBalance::GetEmptyWeight);
-  PropertyManager->Tie("inertia/cg-x-in", this,1,
-                       (PMF)&FGMassBalance::GetXYZcg);
-  PropertyManager->Tie("inertia/cg-y-in", this,2,
-                       (PMF)&FGMassBalance::GetXYZcg);
-  PropertyManager->Tie("inertia/cg-z-in", this,3,
-                       (PMF)&FGMassBalance::GetXYZcg);
-  PropertyManager->Tie("inertia/ixx-slugs_ft2", this,
-                       &FGMassBalance::GetIxx);
-  PropertyManager->Tie("inertia/iyy-slugs_ft2", this,
-                       &FGMassBalance::GetIyy);
-  PropertyManager->Tie("inertia/izz-slugs_ft2", this,
-                       &FGMassBalance::GetIzz);
-  PropertyManager->Tie("inertia/ixy-slugs_ft2", this,
-                       &FGMassBalance::GetIxy);
-  PropertyManager->Tie("inertia/ixz-slugs_ft2", this,
-                       &FGMassBalance::GetIxz);
-  PropertyManager->Tie("inertia/iyz-slugs_ft2", this,
-                       &FGMassBalance::GetIyz);
-  typedef int (FGMassBalance::*iOPV)() const;
-  PropertyManager->Tie("inertia/print-mass-properties", this, (iOPV)0,
-                       &FGMassBalance::GetMassPropertiesReport);
+  PropertyManager->Tie("inertia/mass-slugs", this, &FGMassBalance::GetMass);
+  PropertyManager->Tie("inertia/weight-lbs", this, &FGMassBalance::GetWeight);
+  PropertyManager->Tie("inertia/empty-weight-lbs", this, &FGMassBalance::GetEmptyWeight);
+  PropertyManager->Tie("inertia/cg-x-in", this, eX, &FGMassBalance::GetXYZcg);
+  PropertyManager->Tie("inertia/cg-y-in", this, eY, &FGMassBalance::GetXYZcg);
+  PropertyManager->Tie("inertia/cg-z-in", this, eZ, &FGMassBalance::GetXYZcg);
+  PropertyManager->Tie("inertia/ixx-slugs_ft2", this, &FGMassBalance::GetIxx);
+  PropertyManager->Tie("inertia/iyy-slugs_ft2", this, &FGMassBalance::GetIyy);
+  PropertyManager->Tie("inertia/izz-slugs_ft2", this, &FGMassBalance::GetIzz);
+  PropertyManager->Tie("inertia/ixy-slugs_ft2", this, &FGMassBalance::GetIxy);
+  PropertyManager->Tie("inertia/ixz-slugs_ft2", this, &FGMassBalance::GetIxz);
+  PropertyManager->Tie("inertia/iyz-slugs_ft2", this, &FGMassBalance::GetIyz);
+  PropertyManager->Tie<FGMassBalance, int>("inertia/print-mass-properties", this,
+                                            nullptr, &FGMassBalance::GetMassPropertiesReport);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -450,7 +436,7 @@ void FGMassBalance::PointMass::bind(FGPropertyManager* PropertyManager,
 
 void FGMassBalance::GetMassPropertiesReport(int i)
 {
-  FGLogging log(FDMExec->GetLogger(), LogLevel::INFO);
+  FGLogging log(LogLevel::INFO);
   log << endl << LogFormat::BLUE << LogFormat::BOLD
       << "  Mass Properties Report (English units: lbf, in, slug-ft^2)"
       << LogFormat::RESET << endl;
@@ -515,7 +501,7 @@ void FGMassBalance::Debug(int from)
 
   if (debug_lvl & 1) { // Standard console startup message output
     if (from == 2) { // Loading
-      FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+      FGLogging log(LogLevel::DEBUG);
       log << endl << "  Mass and Balance:" << endl << fixed;
       log << "    baseIxx: " << baseJ(1,1) << " slug-ft2" << endl;
       log << "    baseIyy: " << baseJ(2,2) << " slug-ft2" << endl;
@@ -535,7 +521,7 @@ void FGMassBalance::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGMassBalance" << endl;
     if (from == 1) log << "Destroyed:    FGMassBalance" << endl;
   }
@@ -545,7 +531,7 @@ void FGMassBalance::Debug(int from)
   }
   if (debug_lvl & 16) { // Sanity checking
     if (from == 2) {
-      FGLogging log(FDMExec->GetLogger(), LogLevel::DEBUG);
+      FGLogging log(LogLevel::DEBUG);
       if (EmptyWeight <= 0.0 || EmptyWeight > 1e9)
         log << "MassBalance::EmptyWeight out of bounds: " << EmptyWeight << endl;
       if (Weight <= 0.0 || Weight > 1e9)

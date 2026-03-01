@@ -103,9 +103,9 @@ FGSensor::FGSensor(FGFCS* fcs, Element* element)
       NoiseType = eAbsolute;
     } else {
       NoiseType = ePercent;
-      FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::ERROR);
+      FGLogging log(LogLevel::ERROR);
       log << "Unknown noise type in sensor: " << Name
-          << "\n  defaulting to PERCENT.\n";
+        << "\n  defaulting to PERCENT.\n";
     }
     string distribution = element->FindElement("noise")->GetAttributeValue("distribution");
     if (distribution == "UNIFORM") {
@@ -114,9 +114,9 @@ FGSensor::FGSensor(FGFCS* fcs, Element* element)
       DistributionType = eGaussian;
     } else {
       DistributionType = eUniform;
-      FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::ERROR);
+      FGLogging log(LogLevel::ERROR);
       log << "Unknown random distribution type in sensor: " << Name
-          << "\n  defaulting to UNIFORM.\n";
+        << "\n  defaulting to UNIFORM.\n";
     }
   }
 
@@ -260,17 +260,19 @@ void FGSensor::bind(Element* el, FGPropertyManager* PropertyManager)
   const string tmp_low = tmp + "/malfunction/fail_low";
   const string tmp_high = tmp + "/malfunction/fail_high";
   const string tmp_stuck = tmp + "/malfunction/fail_stuck";
+  const string tmp_randomseed = tmp + "/randomseed";
 
   PropertyManager->Tie( tmp_low, this, &FGSensor::GetFailLow, &FGSensor::SetFailLow);
   PropertyManager->Tie( tmp_high, this, &FGSensor::GetFailHigh, &FGSensor::SetFailHigh);
   PropertyManager->Tie( tmp_stuck, this, &FGSensor::GetFailStuck, &FGSensor::SetFailStuck);
+  PropertyManager->Tie( tmp_randomseed, this, &FGSensor::GetNoiseRandomSeed, &FGSensor::SetNoiseRandomSeed);
 
   if (!quant_property.empty()) {
     if (quant_property.find("/") == string::npos) { // not found
       string qprop = "fcs/" + PropertyManager->mkPropertyName(quant_property, true);
-      FGPropertyNode* node = PropertyManager->GetNode(qprop, true);
+      SGPropertyNode* node = PropertyManager->GetNode(qprop, true);
       if (node->isTied()) {
-        XMLLogException err(fcs->GetExec()->GetLogger(), el);
+        XMLLogException err(el);
         err << "Property " << tmp << " has already been successfully bound (late).\n";
         throw err;
       }
@@ -278,7 +280,24 @@ void FGSensor::bind(Element* el, FGPropertyManager* PropertyManager)
         PropertyManager->Tie(qprop, this, &FGSensor::GetQuantized);
     }
   }
+}
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// User is supplying a random seed specifically for this sensor to override the
+// random seed used by FGFDMExec.
+
+void FGSensor::SetNoiseRandomSeed(int sr)
+{
+  RandomSeed = sr;
+  generator = std::make_shared<RandomNumberGenerator>(*RandomSeed);
+}
+
+int FGSensor::GetNoiseRandomSeed(void) const
+{
+  if (RandomSeed)
+    return *RandomSeed;
+  else
+    return fcs->GetExec()->SRand();
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,7 +324,7 @@ void FGSensor::Debug(int from)
   if (debug_lvl <= 0) return;
 
   if (debug_lvl & 1) { // Standard console startup message output
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) { // Constructor
       if (!InputNodes.empty())
         log << "      INPUT: " << InputNodes[0]->GetNameWithSign() << fixed
@@ -344,7 +363,7 @@ void FGSensor::Debug(int from)
     }
   }
   if (debug_lvl & 2 ) { // Instantiation/Destruction notification
-    FGLogging log(fcs->GetExec()->GetLogger(), LogLevel::DEBUG);
+    FGLogging log(LogLevel::DEBUG);
     if (from == 0) log << "Instantiated: FGSensor\n";
     if (from == 1) log << "Destroyed:    FGSensor\n";
   }
